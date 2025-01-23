@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/JJFelix/rss_aggregator/internal/database"
 	"github.com/go-chi/chi/v5"
@@ -39,11 +40,16 @@ func main(){
 	if err != nil{
 		log.Fatal("Can't connect to Database:", err)
 	}
+
+	db := database.New(conn)
 	
 	apiCfg := apiConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
-	
+
+	// Start of Scrapping
+	go startScraping(db, 10, time.Minute)	
+
 
 	// setting up a new router (Handler)
 	router := chi.NewRouter()
@@ -73,7 +79,7 @@ func main(){
 	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
 	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
 	v1Router.Delete("/feed_follows/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
-
+	v1Router.Get("/posts", apiCfg.middlewareAuth(apiCfg.handlerGetPostsForUser))
 
 	// mount the v1 router to the main router under v1 prefix
 	// routes defined under v1Router will be accessible under the '/v1' prefix
