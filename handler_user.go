@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/JJFelix/rss_aggregator/internal/database"
-	"github.com/JJFelix/rss_aggregator/internal/database/auth"
 	"github.com/google/uuid"
 )
 
@@ -39,16 +38,16 @@ func (apiCfg *apiConfig)handlerCreateUser(w http.ResponseWriter, r *http.Request
 	respondWithJSON(w, http.StatusCreated, databaseUserToUser(user)) // empty struct will marshal into an empty JSON object
 }
 
-func (apiCfg *apiConfig)handlerGetUser(w http.ResponseWriter, r *http.Request){
-	apiKey, err := auth.GetAPIKey(r.Header)
-	if err != nil{
-		respondWithError(w, http.StatusForbidden, fmt.Sprintf("Auth Error: %v", err))
-		return 
-	}
-	user, err := apiCfg.DB.GetUserByAPIKey(r.Context(), apiKey)
-	if err != nil{
-		respondWithError(w, 400, fmt.Sprintf("Couldn't get user: %v", err))
-		return 
-	}
+func (apiCfg *apiConfig)handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User){
+	// apiKey, err := auth.GetAPIKey(r.Header)
+	// if err != nil{
+	// 	respondWithError(w, http.StatusForbidden, fmt.Sprintf("Auth Error: %v", err))
+	// 	return 
+	// }
+	// user, err := apiCfg.DB.GetUserByAPIKey(r.Context(), apiKey)
+	// if err != nil{
+	// 	respondWithError(w, 400, fmt.Sprintf("Couldn't get user: %v", err))
+	// 	return 
+	// }
 	respondWithJSON(w, 200, databaseUserToUser(user))
 }

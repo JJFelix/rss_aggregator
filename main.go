@@ -63,8 +63,17 @@ func main(){
 
 	v1Router.Get("/ready", handlerReadiness) // connecting the handlerReadiness function to the ready path(endpoint)
 	v1Router.Get("/err", handlerErr)
+
 	v1Router.Post("/users", apiCfg.handlerCreateUser)
-	v1Router.Get("/users", apiCfg.handlerGetUser)
+	v1Router.Get("/users", apiCfg.middlewareAuth(apiCfg.handlerGetUser))
+
+	v1Router.Post("/feeds", apiCfg.middlewareAuth(apiCfg.handlerCreateFeed))
+	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)
+
+	v1Router.Post("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerCreateFeedFollow))
+	v1Router.Get("/feed_follows", apiCfg.middlewareAuth(apiCfg.handlerGetFeedFollows))
+	v1Router.Delete("/feed_follows/{feedFollowID}", apiCfg.middlewareAuth(apiCfg.handlerDeleteFeedFollow))
+
 
 	// mount the v1 router to the main router under v1 prefix
 	// routes defined under v1Router will be accessible under the '/v1' prefix
