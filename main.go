@@ -35,6 +35,18 @@ func main(){
 		MaxAge: 			300,	
 	}))
 
+	// routers
+	v1Router := chi.NewRouter() // create new router instance for version 1 of the app
+
+	v1Router.Get("/ready", handlerReadiness) // connecting the handlerReadiness function to the ready path(endpoint)
+	v1Router.Get("/err", handlerErr)
+
+	// mount the v1 router to the main router under v1 prefix
+	// routes defined under v1Router will be accessible under the '/v1' prefix
+	// e.g. /v1/ready
+	// allows for scalability, modularity and API Versioning
+	router.Mount("/v1", v1Router)
+
 	// HTTP Server
 	srv := &http.Server{
 		Handler: router,
