@@ -2,14 +2,21 @@ package main
 
 import (
 	// "fmt"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/JJFelix/rss_aggregator/internal/database"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
+
+type apiConfig struct{
+	DB *database.Queries
+}
 
 func main(){
 	// Loading environment variables
@@ -19,6 +26,22 @@ func main(){
 
 	if portString == ""{
 		log.Fatal("PORT Not found")
+	}
+
+	// importimg the db connection
+	dbURL := os.Getenv("DB_URL")
+
+	if dbURL == ""{
+		log.Fatal("DB_URL Not found")
+	}
+
+	conn, err := sql.Open("postgres", dbURL)
+	if err != nil{
+		log.Fatal("Can't connect to Database:", err)
+	}
+	
+	apiCfg := apiConfig{
+		DB: database.New(conn),
 	}
 	
 
@@ -40,6 +63,8 @@ func main(){
 
 	v1Router.Get("/ready", handlerReadiness) // connecting the handlerReadiness function to the ready path(endpoint)
 	v1Router.Get("/err", handlerErr)
+	v1Router.Post("/users", apiCfg.handlerCreateUser)
+	v1Router.Get("/users", apiCfg.handlerGetUser)
 
 	// mount the v1 router to the main router under v1 prefix
 	// routes defined under v1Router will be accessible under the '/v1' prefix
@@ -55,7 +80,7 @@ func main(){
 
 	log.Printf("Server running on port %v", portString)
 
-	err := srv.ListenAndServe() // a blocking operation
+	err = srv.ListenAndServe() // a blocking operation
 	if err != nil{
 		log.Fatal(err)
 	}
